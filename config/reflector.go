@@ -1,54 +1,48 @@
 package config
 
 import (
-        "bufio"
-        "fmt"
-        "os"
-        "strings"
+	"bufio"
+	"fmt"
+	"os"
+	"strings"
 )
 
-// ReflectorConfig представляет конфигурацию рефлектора.
 type ReflectorConfig map[byte]byte
 
-// NewReflectorConfig создает новую конфигурацию рефлектора из файла.
 func NewReflectorConfig(filename string) (ReflectorConfig, error) {
-        file, err := os.Open(filename)
-        if err != nil {
-                return nil, fmt.Errorf("ошибка открытия файла: %w", err)
-        }
-        defer file.Close()
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка открытия файла: %w", err)
+	}
+	defer file.Close()
 
-        config := make(ReflectorConfig)
-        scanner := bufio.NewScanner(file)
-        lineNumber := 0
+	config := make(ReflectorConfig)
+	scanner := bufio.NewScanner(file)
+	lineNumber := 0
 
-        for scanner.Scan() {
-                lineNumber++
-                line := strings.ToUpper(scanner.Text())
-                pairs := strings.Split(line, " ")
+	for scanner.Scan() {
+		lineNumber++
+		line := strings.ToUpper(scanner.Text())
+		pairs := strings.Split(line, " ")
 
-                for _, pair := range pairs {
-                        pair = strings.TrimSpace(pair)
-                        if len(pair) != 2 {
-                                return nil, fmt.Errorf("неверный формат пары в строке %d: %s, должно быть 2 символа", lineNumber, pair)
-                        }
-            
-            if pair[0] < 'A' || pair[0] > 'Z' || pair[1] < 'A' || pair[1] > 'Z' {
-                return nil, fmt.Errorf("недопустимый символ в паре в строке %d: %s", lineNumber, pair)
-            }
+		for _, pair := range pairs {
+			pair = strings.TrimSpace(pair)
+			if len(pair) != 2 {
+				return nil, fmt.Errorf("неверный формат пары в строке %d: %s, должно быть 2 символа", lineNumber, pair)
+			}
 
-                        config[pair[0]] = pair[1]
-                        config[pair[1]] = pair[0]
-                }
-        }
+			if pair[0] < 'A' || pair[0] > 'Z' || pair[1] < 'A' || pair[1] > 'Z' {
+				return nil, fmt.Errorf("недопустимый символ в паре в строке %d: %s", lineNumber, pair)
+			}
 
-        if err := scanner.Err(); err != nil {
-                return nil, fmt.Errorf("ошибка чтения файла: %w", err)
-        }
+			config[pair[0]] = pair[1]
+			config[pair[1]] = pair[0]
+		}
+	}
 
-    if len(config) != 26 {
-        return nil, fmt.Errorf("неверное количество пар, должно быть 13, а получено %d", len(config)/2)
-    }
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("ошибка чтения файла: %w", err)
+	}
 
-        return config, nil
+	return config, nil
 }
